@@ -31,6 +31,8 @@ const labels = {
   ready: "Pret",
 };
 
+const APP_VERSION = "v15";
+
 function getSettings() {
   return {
     prep: clamp(Number(document.querySelector("#prep").value), 0, 300),
@@ -77,7 +79,7 @@ async function requestWakeLock() {
     wakeLock.addEventListener("release", () => {
       wakeStatusEl.textContent = running
         ? "Anti-veille interrompu, touche l'ecran pour le reactiver."
-        : "Ecran actif pendant le timer si le telephone le permet.";
+        : `Ecran actif pendant le timer si le telephone le permet. ${APP_VERSION}`;
       wakeStatusEl.classList.remove("active");
     });
   } catch {
@@ -92,7 +94,7 @@ async function releaseWakeLock() {
     wakeLock = null;
   }
 
-  wakeStatusEl.textContent = "Ecran actif pendant le timer si le telephone le permet.";
+  wakeStatusEl.textContent = `Ecran actif pendant le timer si le telephone le permet. ${APP_VERSION}`;
   wakeStatusEl.classList.remove("active");
 }
 
