@@ -2,7 +2,7 @@
 
 Ce depot contient deux applications mobiles gratuites :
 
-- `dojo-timer/` : chronometre type Tabata pour un centre d'arts martiaux
+- `dojo-timer/` : chronometre type Tabata pour le Centre Martial Shudan
 - `poids-ideal/` : calculateur de poids ideal et d'IMC
 
 La page `index.html` affiche un menu pour ouvrir l'une ou l'autre application.

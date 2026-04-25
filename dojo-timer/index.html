@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#151819" />
-    <title>Dojo Timer</title>
+    <title>Centre Martial Shudan Timer</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -13,10 +13,13 @@
       <section class="timer-stage" aria-live="polite">
         <div class="brand-row">
           <div>
-            <p class="eyebrow">Centre d'arts martiaux</p>
-            <h1>Dojo Timer</h1>
+            <p class="eyebrow">Centre Martial Shudan</p>
+            <h1>Shudan Timer</h1>
           </div>
-          <button id="sound-toggle" class="icon-button" type="button" aria-label="Activer le son">Son</button>
+          <div class="top-actions">
+            <button id="fullscreen-toggle" class="icon-button" type="button" aria-label="Activer le plein ecran">Plein</button>
+            <button id="sound-toggle" class="icon-button" type="button" aria-label="Activer le son">Son</button>
+          </div>
         </div>
 
         <div id="phase-badge" class="phase-badge ready">Pret</div>
@@ -45,6 +48,8 @@
           <button id="start-pause" class="primary-button" type="button">Demarrer</button>
           <button id="reset" class="secondary-button" type="button">Reset</button>
         </div>
+
+        <p id="wake-status" class="wake-status">Ecran actif pendant le timer si le telephone le permet.</p>
       </section>
 
       <section class="settings-panel" aria-label="Reglages du chronometre">

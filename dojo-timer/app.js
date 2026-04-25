@@ -7,10 +7,14 @@ const progressBarEl = document.querySelector("#progress-bar");
 const startPauseButton = document.querySelector("#start-pause");
 const resetButton = document.querySelector("#reset");
 const soundToggle = document.querySelector("#sound-toggle");
+const fullscreenToggle = document.querySelector("#fullscreen-toggle");
+const wakeStatusEl = document.querySelector("#wake-status");
 const settingsForm = document.querySelector("#settings-form");
 const presetButtons = document.querySelectorAll(".preset");
 
 let audioContext;
+let bellAudio;
+let wakeLock = null;
 let soundEnabled = false;
 let running = false;
 let intervalId = null;
@@ -59,7 +63,52 @@ function setInputsDisabled(disabled) {
   });
 }
 
-function playBell(strength = 1) {
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator)) {
+    wakeStatusEl.textContent = "Anti-veille non disponible sur ce navigateur.";
+    wakeStatusEl.classList.remove("active");
+    return;
+  }
+
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    wakeStatusEl.textContent = "Ecran garde actif pendant le timer.";
+    wakeStatusEl.classList.add("active");
+    wakeLock.addEventListener("release", () => {
+      wakeStatusEl.textContent = running
+        ? "Anti-veille interrompu, touche l'ecran pour le reactiver."
+        : "Ecran actif pendant le timer si le telephone le permet.";
+      wakeStatusEl.classList.remove("active");
+    });
+  } catch {
+    wakeStatusEl.textContent = "Anti-veille bloque par le navigateur.";
+    wakeStatusEl.classList.remove("active");
+  }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock) {
+    await wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+
+  wakeStatusEl.textContent = "Ecran actif pendant le timer si le telephone le permet.";
+  wakeStatusEl.classList.remove("active");
+}
+
+function playBellAudio(volume = 1) {
+  if (!soundEnabled) {
+    return;
+  }
+
+  bellAudio ||= new Audio("./assets/boxing-bell.wav");
+  const bell = bellAudio.cloneNode();
+  bell.volume = Math.min(1, Math.max(0, volume));
+  bell.currentTime = 0;
+  bell.play().catch(() => playSyntheticBell(volume));
+}
+
+function playSyntheticBell(strength = 1) {
   if (!soundEnabled) {
     return;
   }
@@ -67,16 +116,18 @@ function playBell(strength = 1) {
   audioContext ||= new AudioContext();
   const now = audioContext.currentTime;
   const masterGain = audioContext.createGain();
-  const duration = 1.15;
+  const duration = 1.55;
   const partials = [
-    { frequency: 680, gain: 0.34 },
-    { frequency: 930, gain: 0.22 },
-    { frequency: 1320, gain: 0.14 },
-    { frequency: 1760, gain: 0.08 },
+    { frequency: 520, gain: 0.42, type: "triangle" },
+    { frequency: 810, gain: 0.28, type: "sine" },
+    { frequency: 1215, gain: 0.18, type: "sine" },
+    { frequency: 1680, gain: 0.11, type: "square" },
+    { frequency: 2240, gain: 0.06, type: "sine" },
   ];
 
   masterGain.gain.setValueAtTime(0.0001, now);
-  masterGain.gain.exponentialRampToValueAtTime(0.34 * strength, now + 0.015);
+  masterGain.gain.exponentialRampToValueAtTime(0.58 * strength, now + 0.01);
+  masterGain.gain.exponentialRampToValueAtTime(0.24 * strength, now + 0.12);
   masterGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
   masterGain.connect(audioContext.destination);
 
@@ -84,9 +135,9 @@ function playBell(strength = 1) {
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
 
-    oscillator.type = index === 0 ? "triangle" : "sine";
+    oscillator.type = partial.type;
     oscillator.frequency.setValueAtTime(partial.frequency, now);
-    oscillator.frequency.exponentialRampToValueAtTime(partial.frequency * 0.985, now + duration);
+    oscillator.frequency.exponentialRampToValueAtTime(partial.frequency * (index === 0 ? 0.975 : 0.99), now + duration);
     gain.gain.setValueAtTime(partial.gain, now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
@@ -98,17 +149,16 @@ function playBell(strength = 1) {
 }
 
 function playCountdownBell() {
-  playBell(0.62);
+  playBellAudio(0.62);
 }
 
 function playRoundBell() {
-  playBell(1);
+  playBellAudio(1);
 }
 
 function playEndBell() {
-  playBell(1);
-  setTimeout(() => playBell(1), 420);
-  setTimeout(() => playBell(1), 840);
+  playBellAudio(1);
+  setTimeout(() => playBellAudio(1), 700);
 }
 
 function announcePhase(nextPhase) {
@@ -140,6 +190,7 @@ function startSession() {
   }
 
   running = true;
+  requestWakeLock();
   setInputsDisabled(true);
   startPauseButton.textContent = "Pause";
   startPauseButton.classList.add("running");
@@ -150,6 +201,7 @@ function startSession() {
 function pauseSession() {
   running = false;
   window.clearInterval(intervalId);
+  releaseWakeLock();
   startPauseButton.textContent = "Reprendre";
   startPauseButton.classList.remove("running");
   render();
@@ -157,6 +209,7 @@ function pauseSession() {
 
 function resumeSession() {
   running = true;
+  requestWakeLock();
   startPauseButton.textContent = "Pause";
   startPauseButton.classList.add("running");
   intervalId = window.setInterval(tick, 1000);
@@ -166,6 +219,7 @@ function resumeSession() {
 function resetSession() {
   running = false;
   window.clearInterval(intervalId);
+  releaseWakeLock();
   intervalId = null;
   phase = "ready";
   round = 0;
@@ -181,6 +235,7 @@ function resetSession() {
 function finishSession() {
   running = false;
   window.clearInterval(intervalId);
+  releaseWakeLock();
   intervalId = null;
   phase = "done";
   remaining = 0;
@@ -283,6 +338,26 @@ startPauseButton.addEventListener("click", async () => {
 
 resetButton.addEventListener("click", resetSession);
 
+fullscreenToggle.addEventListener("click", async () => {
+  if (!document.fullscreenElement) {
+    await document.documentElement.requestFullscreen?.().catch(() => {});
+  } else {
+    await document.exitFullscreen?.().catch(() => {});
+  }
+});
+
+document.addEventListener("fullscreenchange", () => {
+  const full = Boolean(document.fullscreenElement);
+  fullscreenToggle.textContent = full ? "Quitter" : "Plein";
+  fullscreenToggle.classList.toggle("active", full);
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && running) {
+    requestWakeLock();
+  }
+});
+
 soundToggle.addEventListener("click", async () => {
   soundEnabled = !soundEnabled;
   soundToggle.textContent = soundEnabled ? "Son ON" : "Son";
@@ -290,7 +365,7 @@ soundToggle.addEventListener("click", async () => {
   if (soundEnabled) {
     audioContext ||= new AudioContext();
     await audioContext.resume();
-    playBell(0.55);
+    playBellAudio(0.75);
   }
 });
 

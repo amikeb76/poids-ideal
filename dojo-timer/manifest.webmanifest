@@ -1,11 +1,11 @@
 {
-  "name": "Dojo Timer",
-  "short_name": "Dojo Timer",
+  "name": "Centre Martial Shudan Timer",
+  "short_name": "Shudan Timer",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#101314",
   "theme_color": "#151819",
-  "description": "Chronometre mobile type Tabata pour cycles d'arts martiaux.",
+  "description": "Chronometre mobile type Tabata pour le Centre Martial Shudan.",
   "icons": [
     {
       "src": "icon.svg",

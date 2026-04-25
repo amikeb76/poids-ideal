@@ -65,6 +65,11 @@ input {
   gap: 12px;
 }
 
+.top-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   color: var(--muted);
@@ -95,6 +100,12 @@ h1 {
   min-width: 58px;
   min-height: 42px;
   font-weight: 850;
+}
+
+.icon-button.active {
+  border-color: var(--done);
+  background: rgba(37, 167, 111, 0.18);
+  color: #d8ffed;
 }
 
 .phase-badge {
@@ -212,6 +223,18 @@ h1 {
 
 .secondary-button {
   background: #101314;
+}
+
+.wake-status {
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.wake-status.active {
+  color: #d8ffed;
 }
 
 .settings-panel {
