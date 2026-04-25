@@ -13,8 +13,6 @@ const settingsForm = document.querySelector("#settings-form");
 const presetButtons = document.querySelectorAll(".preset");
 
 let audioContext;
-let bellBuffer = null;
-let bellBufferPromise = null;
 let activeBellSources = [];
 let wakeLock = null;
 let soundEnabled = false;
@@ -103,22 +101,6 @@ function getAudioContext() {
   return audioContext;
 }
 
-function loadBellBuffer() {
-  if (bellBuffer) {
-    return Promise.resolve(bellBuffer);
-  }
-
-  bellBufferPromise ||= fetch("./assets/boxing-bell.wav")
-    .then((response) => response.arrayBuffer())
-    .then((arrayBuffer) => getAudioContext().decodeAudioData(arrayBuffer))
-    .then((buffer) => {
-      bellBuffer = buffer;
-      return buffer;
-    });
-
-  return bellBufferPromise;
-}
-
 function stopActiveBells() {
   activeBellSources.forEach((source) => {
     try {
@@ -133,54 +115,20 @@ function playBellAudio(volume = 1, durationSeconds = 0.14, delaySeconds = 0) {
     return;
   }
 
-  if (!bellBuffer) {
-    loadBellBuffer()
-      .then(() => playBellAudio(volume, durationSeconds))
-      .catch(() => playSyntheticBell(volume));
-    return;
-  }
-
   const context = getAudioContext();
-  const source = context.createBufferSource();
-  const gain = context.createGain();
   const startAt = context.currentTime + delaySeconds;
-  const stopAt = startAt + durationSeconds;
-
-  source.buffer = bellBuffer;
-  gain.gain.setValueAtTime(0.0001, startAt);
-  gain.gain.exponentialRampToValueAtTime(Math.min(1, Math.max(0, volume)), startAt + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
-  source.connect(gain);
-  gain.connect(context.destination);
-  source.addEventListener("ended", () => {
-    activeBellSources = activeBellSources.filter((item) => item !== source);
-  });
-  activeBellSources.push(source);
-  source.start(startAt, 0, durationSeconds);
-  source.stop(stopAt + 0.02);
-}
-
-function playSyntheticBell(strength = 1) {
-  if (!soundEnabled) {
-    return;
-  }
-
-  audioContext ||= new AudioContext();
-  const now = audioContext.currentTime;
   const masterGain = audioContext.createGain();
-  const duration = 1.55;
+  const stopAt = startAt + durationSeconds;
   const partials = [
-    { frequency: 520, gain: 0.42, type: "triangle" },
-    { frequency: 810, gain: 0.28, type: "sine" },
-    { frequency: 1215, gain: 0.18, type: "sine" },
-    { frequency: 1680, gain: 0.11, type: "square" },
-    { frequency: 2240, gain: 0.06, type: "sine" },
+    { frequency: 720, gain: 0.52, type: "triangle" },
+    { frequency: 1080, gain: 0.28, type: "sine" },
+    { frequency: 1580, gain: 0.18, type: "sine" },
+    { frequency: 2380, gain: 0.09, type: "square" },
   ];
 
-  masterGain.gain.setValueAtTime(0.0001, now);
-  masterGain.gain.exponentialRampToValueAtTime(0.58 * strength, now + 0.01);
-  masterGain.gain.exponentialRampToValueAtTime(0.24 * strength, now + 0.12);
-  masterGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  masterGain.gain.setValueAtTime(0.0001, startAt);
+  masterGain.gain.exponentialRampToValueAtTime(0.5 * volume, startAt + 0.008);
+  masterGain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
   masterGain.connect(audioContext.destination);
 
   partials.forEach((partial, index) => {
@@ -188,15 +136,19 @@ function playSyntheticBell(strength = 1) {
     const gain = audioContext.createGain();
 
     oscillator.type = partial.type;
-    oscillator.frequency.setValueAtTime(partial.frequency, now);
-    oscillator.frequency.exponentialRampToValueAtTime(partial.frequency * (index === 0 ? 0.975 : 0.99), now + duration);
-    gain.gain.setValueAtTime(partial.gain, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    oscillator.frequency.setValueAtTime(partial.frequency, startAt);
+    oscillator.frequency.exponentialRampToValueAtTime(partial.frequency * (index === 0 ? 0.96 : 0.985), stopAt);
+    gain.gain.setValueAtTime(partial.gain, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
 
     oscillator.connect(gain);
     gain.connect(masterGain);
-    oscillator.start(now);
-    oscillator.stop(now + duration);
+    oscillator.addEventListener("ended", () => {
+      activeBellSources = activeBellSources.filter((item) => item !== oscillator);
+    });
+    activeBellSources.push(oscillator);
+    oscillator.start(startAt);
+    oscillator.stop(stopAt + 0.02);
   });
 }
 
@@ -420,7 +372,6 @@ soundToggle.addEventListener("click", async () => {
 
   if (soundEnabled) {
     await getAudioContext().resume();
-    await loadBellBuffer().catch(() => {});
     stopActiveBells();
     playBellAudio(0.75, 0.14);
   }
