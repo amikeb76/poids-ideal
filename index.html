@@ -3,93 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#167c68" />
-    <title>Poids Ideal</title>
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css" />
+    <title>Applications mobiles</title>
+    <link rel="stylesheet" href="home.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <section class="hero" aria-labelledby="app-title">
-        <div>
-          <p class="eyebrow">Calculateur sante</p>
-          <h1 id="app-title">Poids ideal</h1>
-          <p class="intro">
-            Estime ton poids ideal avec plusieurs formules et compare-le a ton IMC actuel.
-          </p>
-        </div>
+    <main class="home-shell">
+      <section class="hero">
+        <p class="eyebrow">Mes applications mobiles</p>
+        <h1>Choisis ton outil</h1>
+        <p>Deux applications gratuites, pretes pour telephone et GitHub Pages.</p>
       </section>
 
-      <section class="panel" aria-label="Formulaire de calcul">
-        <form id="ideal-weight-form" class="form">
-          <div class="field">
-            <label for="height">Taille</label>
-            <div class="input-row">
-              <input id="height" name="height" type="number" min="120" max="230" value="170" required />
-              <span>cm</span>
-            </div>
-          </div>
+      <section class="app-list" aria-label="Liste des applications">
+        <a class="app-card timer" href="./dojo-timer/">
+          <span>Arts martiaux</span>
+          <strong>Dojo Timer</strong>
+          <em>Chronometre type Tabata pour cycles, repos et rounds.</em>
+        </a>
 
-          <div class="field">
-            <label for="weight">Poids actuel</label>
-            <div class="input-row">
-              <input id="weight" name="weight" type="number" min="30" max="250" value="70" required />
-              <span>kg</span>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="age">Age</label>
-            <div class="input-row">
-              <input id="age" name="age" type="number" min="16" max="100" value="30" required />
-              <span>ans</span>
-            </div>
-          </div>
-
-          <fieldset class="segmented">
-            <legend>Profil</legend>
-            <label>
-              <input type="radio" name="sex" value="female" checked />
-              <span>Femme</span>
-            </label>
-            <label>
-              <input type="radio" name="sex" value="male" />
-              <span>Homme</span>
-            </label>
-          </fieldset>
-
-          <button class="primary-button" type="submit">Calculer</button>
-        </form>
-      </section>
-
-      <section class="results" aria-live="polite">
-        <article class="result-card main-result">
-          <span class="label">Poids ideal estime</span>
-          <strong id="ideal-weight">-- kg</strong>
-          <p id="ideal-range">Entre -- et -- kg</p>
-        </article>
-
-        <div class="result-grid">
-          <article class="result-card">
-            <span class="label">IMC actuel</span>
-            <strong id="bmi">--</strong>
-            <p id="bmi-status">Complete les champs</p>
-          </article>
-
-          <article class="result-card">
-            <span class="label">Ecart</span>
-            <strong id="difference">-- kg</strong>
-            <p id="difference-text">Par rapport a l'estimation</p>
-          </article>
-        </div>
-
-        <article class="result-card formula-card">
-          <span class="label">Details des formules</span>
-          <dl id="formula-list"></dl>
-        </article>
+        <a class="app-card weight" href="./poids-ideal/">
+          <span>Sante</span>
+          <strong>Poids Ideal</strong>
+          <em>Calcul du poids ideal, IMC et ecart avec le poids actuel.</em>
+        </a>
       </section>
     </main>
-
-    <script src="app.js"></script>
   </body>
 </html>

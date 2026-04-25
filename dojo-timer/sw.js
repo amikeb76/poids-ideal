@@ -1,18 +1,11 @@
-const CACHE_NAME = "mobile-apps-suite-v1";
+const CACHE_NAME = "dojo-timer-v1";
 const ASSETS = [
   "./",
   "./index.html",
-  "./home.css",
-  "./dojo-timer/",
-  "./dojo-timer/index.html",
-  "./dojo-timer/styles.css",
-  "./dojo-timer/app.js",
-  "./dojo-timer/manifest.webmanifest",
-  "./dojo-timer/icon.svg",
-  "./poids-ideal/",
-  "./poids-ideal/index.html",
-  "./poids-ideal/styles.css",
-  "./poids-ideal/app.js",
+  "./styles.css",
+  "./app.js",
+  "./manifest.webmanifest",
+  "./icon.svg",
 ];
 
 self.addEventListener("install", (event) => {

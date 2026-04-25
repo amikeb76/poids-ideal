@@ -59,36 +59,65 @@ function setInputsDisabled(disabled) {
   });
 }
 
-function beep(frequency = 880, duration = 0.12, volume = 0.25) {
+function playBell(strength = 1) {
   if (!soundEnabled) {
     return;
   }
 
   audioContext ||= new AudioContext();
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
+  const now = audioContext.currentTime;
+  const masterGain = audioContext.createGain();
+  const duration = 1.15;
+  const partials = [
+    { frequency: 680, gain: 0.34 },
+    { frequency: 930, gain: 0.22 },
+    { frequency: 1320, gain: 0.14 },
+    { frequency: 1760, gain: 0.08 },
+  ];
 
-  oscillator.frequency.value = frequency;
-  oscillator.type = "sine";
-  gain.gain.value = volume;
+  masterGain.gain.setValueAtTime(0.0001, now);
+  masterGain.gain.exponentialRampToValueAtTime(0.34 * strength, now + 0.015);
+  masterGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  masterGain.connect(audioContext.destination);
 
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + duration);
+  partials.forEach((partial, index) => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = index === 0 ? "triangle" : "sine";
+    oscillator.frequency.setValueAtTime(partial.frequency, now);
+    oscillator.frequency.exponentialRampToValueAtTime(partial.frequency * 0.985, now + duration);
+    gain.gain.setValueAtTime(partial.gain, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    oscillator.connect(gain);
+    gain.connect(masterGain);
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+  });
+}
+
+function playCountdownBell() {
+  playBell(0.62);
+}
+
+function playRoundBell() {
+  playBell(1);
+}
+
+function playEndBell() {
+  playBell(1);
+  setTimeout(() => playBell(1), 420);
+  setTimeout(() => playBell(1), 840);
 }
 
 function announcePhase(nextPhase) {
-  if (nextPhase === "work") {
-    beep(980, 0.2, 0.3);
-  } else if (nextPhase === "rest") {
-    beep(520, 0.18, 0.25);
+  if (nextPhase === "work" || nextPhase === "rest") {
+    playRoundBell();
   } else if (nextPhase === "done") {
-    beep(780, 0.16, 0.25);
-    setTimeout(() => beep(980, 0.16, 0.25), 180);
-    setTimeout(() => beep(1180, 0.22, 0.25), 360);
+    playEndBell();
   } else if (remaining <= 3 && remaining > 0) {
-    beep(700, 0.08, 0.2);
+    playCountdownBell();
   }
 }
 
@@ -261,7 +290,7 @@ soundToggle.addEventListener("click", async () => {
   if (soundEnabled) {
     audioContext ||= new AudioContext();
     await audioContext.resume();
-    beep(880, 0.1, 0.2);
+    playBell(0.55);
   }
 });
 

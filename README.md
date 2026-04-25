@@ -1,13 +1,18 @@
-# Application mobile Poids Ideal
+# Applications mobiles
 
-Cette application calcule une estimation du poids ideal a partir de la taille, du poids actuel, de l'age et du profil. Elle affiche aussi l'IMC, l'ecart avec l'estimation et le detail de plusieurs formules.
+Ce depot contient deux applications mobiles gratuites :
 
-## Ouvrir l'application
+- `dojo-timer/` : chronometre type Tabata pour un centre d'arts martiaux
+- `poids-ideal/` : calculateur de poids ideal et d'IMC
 
-Ouvre le fichier `index.html` dans un navigateur.
+La page `index.html` affiche un menu pour ouvrir l'une ou l'autre application.
 
-Pour l'installation comme application mobile, il faut servir le dossier avec un serveur web local ou l'heberger en HTTPS. Ensuite, depuis le navigateur mobile, utilise l'option "Ajouter a l'ecran d'accueil".
+## GitHub Pages
 
-## Note importante
+Publie tous les fichiers a la racine du depot GitHub Pages.
 
-Le resultat est une estimation indicative, pas un diagnostic medical. Pour un objectif de perte ou prise de poids, il vaut mieux demander conseil a un professionnel de sante.
+Les adresses seront :
+
+- Menu principal : `https://amikeb76.github.io/poids-ideal/`
+- Chronometre : `https://amikeb76.github.io/poids-ideal/dojo-timer/`
+- Calculateur : `https://amikeb76.github.io/poids-ideal/poids-ideal/`

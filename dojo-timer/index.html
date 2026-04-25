@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#151819" />
+    <title>Dojo Timer</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="timer-stage" aria-live="polite">
+        <div class="brand-row">
+          <div>
+            <p class="eyebrow">Centre d'arts martiaux</p>
+            <h1>Dojo Timer</h1>
+          </div>
+          <button id="sound-toggle" class="icon-button" type="button" aria-label="Activer le son">Son</button>
+        </div>
+
+        <div id="phase-badge" class="phase-badge ready">Pret</div>
+        <div id="timer" class="timer">00:10</div>
+
+        <div class="progress-shell" aria-hidden="true">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div class="session-meta">
+          <div>
+            <span>Cycle</span>
+            <strong id="round-count">0 / 8</strong>
+          </div>
+          <div>
+            <span>Etape</span>
+            <strong id="phase-label">Preparation</strong>
+          </div>
+          <div>
+            <span>Total</span>
+            <strong id="total-time">00:00</strong>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="start-pause" class="primary-button" type="button">Demarrer</button>
+          <button id="reset" class="secondary-button" type="button">Reset</button>
+        </div>
+      </section>
+
+      <section class="settings-panel" aria-label="Reglages du chronometre">
+        <div class="preset-row" role="group" aria-label="Presets rapides">
+          <button class="preset active" type="button" data-work="20" data-rest="10" data-rounds="8" data-prep="10">Tabata</button>
+          <button class="preset" type="button" data-work="180" data-rest="60" data-rounds="5" data-prep="30">Combat</button>
+          <button class="preset" type="button" data-work="60" data-rest="30" data-rounds="10" data-prep="15">Technique</button>
+        </div>
+
+        <form id="settings-form" class="settings-form">
+          <label>
+            <span>Preparation</span>
+            <input id="prep" name="prep" type="number" min="0" max="300" value="10" />
+            <em>sec</em>
+          </label>
+
+          <label>
+            <span>Travail</span>
+            <input id="work" name="work" type="number" min="5" max="900" value="20" />
+            <em>sec</em>
+          </label>
+
+          <label>
+            <span>Repos</span>
+            <input id="rest" name="rest" type="number" min="0" max="600" value="10" />
+            <em>sec</em>
+          </label>
+
+          <label>
+            <span>Cycles</span>
+            <input id="rounds" name="rounds" type="number" min="1" max="99" value="8" />
+            <em>fois</em>
+          </label>
+        </form>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

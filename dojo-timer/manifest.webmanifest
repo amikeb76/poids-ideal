@@ -1,11 +1,11 @@
 {
-  "name": "Applications mobiles",
-  "short_name": "Apps",
+  "name": "Dojo Timer",
+  "short_name": "Dojo Timer",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#101314",
   "theme_color": "#151819",
-  "description": "Menu pour ouvrir le chronometre d'arts martiaux et le calculateur de poids ideal.",
+  "description": "Chronometre mobile type Tabata pour cycles d'arts martiaux.",
   "icons": [
     {
       "src": "icon.svg",
