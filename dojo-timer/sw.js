@@ -1,4 +1,4 @@
-const CACHE_NAME = "dojo-timer-v8";
+const CACHE_NAME = "dojo-timer-v9";
 const ASSETS = [
   "./",
   "./index.html",

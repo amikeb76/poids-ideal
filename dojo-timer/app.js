@@ -154,6 +154,7 @@ function playCountdownBell() {
 
 function playRoundBell() {
   playBellAudio(1);
+  setTimeout(() => playBellAudio(1), 700);
 }
 
 function playEndBell() {
