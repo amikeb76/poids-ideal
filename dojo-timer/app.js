@@ -154,12 +154,12 @@ function playCountdownBell() {
 
 function playRoundBell() {
   playBellAudio(1);
-  setTimeout(() => playBellAudio(1), 700);
+  setTimeout(() => playBellAudio(1), 420);
 }
 
 function playEndBell() {
   playBellAudio(1);
-  setTimeout(() => playBellAudio(1), 700);
+  setTimeout(() => playBellAudio(1), 420);
 }
 
 function announcePhase(nextPhase) {
