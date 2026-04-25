@@ -1,4 +1,4 @@
-const CACHE_NAME = "mobile-apps-suite-v7";
+const CACHE_NAME = "mobile-apps-suite-v8";
 const ASSETS = [
   "./",
   "./index.html",
@@ -11,6 +11,8 @@ const ASSETS = [
   "./dojo-timer/icon.svg",
   "./dojo-timer/assets/boxing-bell.wav",
   "./dojo-timer/assets/shudan-logo.jpg",
+  "./dojo-timer/assets/icon-192.png",
+  "./dojo-timer/assets/icon-512.png",
   "./poids-ideal/",
   "./poids-ideal/index.html",
   "./poids-ideal/styles.css",

@@ -1,4 +1,4 @@
-const CACHE_NAME = "dojo-timer-v7";
+const CACHE_NAME = "dojo-timer-v8";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,8 @@ const ASSETS = [
   "./icon.svg",
   "./assets/boxing-bell.wav",
   "./assets/shudan-logo.jpg",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png",
 ];
 
 self.addEventListener("install", (event) => {
