@@ -31,7 +31,7 @@ const labels = {
   ready: "Pret",
 };
 
-const APP_VERSION = "v15";
+const APP_VERSION = "v16";
 
 function getSettings() {
   return {
@@ -112,7 +112,7 @@ function stopActiveBells() {
   activeBellSources = [];
 }
 
-function playBellAudio(volume = 1, durationSeconds = 0.14, delaySeconds = 0) {
+function playBellAudio(volume = 1, durationSeconds = 0.46, delaySeconds = 0) {
   if (!soundEnabled) {
     return;
   }
@@ -122,14 +122,16 @@ function playBellAudio(volume = 1, durationSeconds = 0.14, delaySeconds = 0) {
   const masterGain = audioContext.createGain();
   const stopAt = startAt + durationSeconds;
   const partials = [
-    { frequency: 720, gain: 0.52, type: "triangle" },
-    { frequency: 1080, gain: 0.28, type: "sine" },
-    { frequency: 1580, gain: 0.18, type: "sine" },
-    { frequency: 2380, gain: 0.09, type: "square" },
+    { frequency: 520, gain: 0.46, type: "triangle" },
+    { frequency: 835, gain: 0.28, type: "sine" },
+    { frequency: 1275, gain: 0.18, type: "sine" },
+    { frequency: 1910, gain: 0.1, type: "square" },
+    { frequency: 2860, gain: 0.06, type: "sine" },
   ];
 
   masterGain.gain.setValueAtTime(0.0001, startAt);
-  masterGain.gain.exponentialRampToValueAtTime(0.5 * volume, startAt + 0.008);
+  masterGain.gain.exponentialRampToValueAtTime(0.72 * volume, startAt + 0.012);
+  masterGain.gain.exponentialRampToValueAtTime(0.18 * volume, startAt + 0.11);
   masterGain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
   masterGain.connect(audioContext.destination);
 
@@ -152,32 +154,51 @@ function playBellAudio(volume = 1, durationSeconds = 0.14, delaySeconds = 0) {
     oscillator.start(startAt);
     oscillator.stop(stopAt + 0.02);
   });
+
+  [0.16, 0.29].forEach((echoDelay, echoIndex) => {
+    const echo = audioContext.createOscillator();
+    const echoGain = audioContext.createGain();
+    const echoStart = startAt + echoDelay;
+    const echoStop = echoStart + 0.16;
+
+    echo.type = "sine";
+    echo.frequency.setValueAtTime(echoIndex === 0 ? 835 : 1275, echoStart);
+    echoGain.gain.setValueAtTime(0.0001, echoStart);
+    echoGain.gain.exponentialRampToValueAtTime((echoIndex === 0 ? 0.16 : 0.08) * volume, echoStart + 0.01);
+    echoGain.gain.exponentialRampToValueAtTime(0.0001, echoStop);
+    echo.connect(echoGain);
+    echoGain.connect(audioContext.destination);
+    echo.addEventListener("ended", () => {
+      activeBellSources = activeBellSources.filter((item) => item !== echo);
+    });
+    activeBellSources.push(echo);
+    echo.start(echoStart);
+    echo.stop(echoStop + 0.02);
+  });
 }
 
 function playCountdownBell() {
   stopActiveBells();
-  playBellAudio(0.9, 0.14);
+  playBellAudio(0.82, 0.34);
 }
 
-function playRoundBell() {
+function playPhaseBell() {
   stopActiveBells();
-  playBellAudio(1, 0.14);
-  playBellAudio(1, 0.14, 0.2);
+  playBellAudio(1, 0.42);
+  playBellAudio(1, 0.42, 0.42);
 }
 
 function playEndBell() {
   stopActiveBells();
-  playBellAudio(1, 0.14);
-  playBellAudio(1, 0.14, 0.2);
+  playBellAudio(1, 0.42);
+  playBellAudio(1, 0.42, 0.42);
 }
 
-function announcePhase(nextPhase) {
+function announcePhaseStart(nextPhase) {
   if (nextPhase === "work" || nextPhase === "rest") {
-    playRoundBell();
+    playPhaseBell();
   } else if (nextPhase === "done") {
     playEndBell();
-  } else if (remaining <= 3 && remaining > 0) {
-    playCountdownBell();
   }
 }
 
@@ -185,7 +206,7 @@ function setPhase(nextPhase, totalSeconds) {
   phase = nextPhase;
   phaseTotal = totalSeconds;
   remaining = totalSeconds;
-  announcePhase(nextPhase);
+  announcePhaseStart(nextPhase);
   render();
 }
 
@@ -265,7 +286,7 @@ function tick() {
 
   if (remaining > 0) {
     if (remaining <= 3) {
-      announcePhase(phase);
+      playCountdownBell();
     }
     render();
     return;
@@ -375,7 +396,7 @@ soundToggle.addEventListener("click", async () => {
   if (soundEnabled) {
     await getAudioContext().resume();
     stopActiveBells();
-    playBellAudio(0.75, 0.14);
+    playBellAudio(0.75, 0.34);
   }
 });
 

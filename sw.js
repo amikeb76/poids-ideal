@@ -1,4 +1,4 @@
-const CACHE_NAME = "mobile-apps-suite-v15";
+const CACHE_NAME = "mobile-apps-suite-v16";
 const ASSETS = [
   "./",
   "./index.html",
