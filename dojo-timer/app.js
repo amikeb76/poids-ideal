@@ -15,6 +15,7 @@ const presetButtons = document.querySelectorAll(".preset");
 let audioContext;
 let bellBuffer = null;
 let bellBufferPromise = null;
+let activeBellSources = [];
 let wakeLock = null;
 let soundEnabled = false;
 let running = false;
@@ -118,7 +119,16 @@ function loadBellBuffer() {
   return bellBufferPromise;
 }
 
-function playBellAudio(volume = 1, durationSeconds = 0.24) {
+function stopActiveBells() {
+  activeBellSources.forEach((source) => {
+    try {
+      source.stop();
+    } catch {}
+  });
+  activeBellSources = [];
+}
+
+function playBellAudio(volume = 1, durationSeconds = 0.14, delaySeconds = 0) {
   if (!soundEnabled) {
     return;
   }
@@ -133,13 +143,21 @@ function playBellAudio(volume = 1, durationSeconds = 0.24) {
   const context = getAudioContext();
   const source = context.createBufferSource();
   const gain = context.createGain();
+  const startAt = context.currentTime + delaySeconds;
+  const stopAt = startAt + durationSeconds;
 
   source.buffer = bellBuffer;
-  gain.gain.setValueAtTime(Math.min(1, Math.max(0, volume)), context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + durationSeconds);
+  gain.gain.setValueAtTime(0.0001, startAt);
+  gain.gain.exponentialRampToValueAtTime(Math.min(1, Math.max(0, volume)), startAt + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
   source.connect(gain);
   gain.connect(context.destination);
-  source.start(context.currentTime, 0, durationSeconds);
+  source.addEventListener("ended", () => {
+    activeBellSources = activeBellSources.filter((item) => item !== source);
+  });
+  activeBellSources.push(source);
+  source.start(startAt, 0, durationSeconds);
+  source.stop(stopAt + 0.02);
 }
 
 function playSyntheticBell(strength = 1) {
@@ -183,17 +201,20 @@ function playSyntheticBell(strength = 1) {
 }
 
 function playCountdownBell() {
-  playBellAudio(0.85, 0.24);
+  stopActiveBells();
+  playBellAudio(0.9, 0.14);
 }
 
 function playRoundBell() {
-  playBellAudio(1, 0.24);
-  setTimeout(() => playBellAudio(1, 0.24), 280);
+  stopActiveBells();
+  playBellAudio(1, 0.14);
+  playBellAudio(1, 0.14, 0.2);
 }
 
 function playEndBell() {
-  playBellAudio(1, 0.24);
-  setTimeout(() => playBellAudio(1, 0.24), 280);
+  stopActiveBells();
+  playBellAudio(1, 0.14);
+  playBellAudio(1, 0.14, 0.2);
 }
 
 function announcePhase(nextPhase) {
@@ -400,7 +421,8 @@ soundToggle.addEventListener("click", async () => {
   if (soundEnabled) {
     await getAudioContext().resume();
     await loadBellBuffer().catch(() => {});
-    playBellAudio(0.75, 0.24);
+    stopActiveBells();
+    playBellAudio(0.75, 0.14);
   }
 });
 
