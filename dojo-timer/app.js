@@ -96,7 +96,7 @@ async function releaseWakeLock() {
   wakeStatusEl.classList.remove("active");
 }
 
-function playBellAudio(volume = 1) {
+function playBellAudio(volume = 1, durationMs = 520) {
   if (!soundEnabled) {
     return;
   }
@@ -106,6 +106,10 @@ function playBellAudio(volume = 1) {
   bell.volume = Math.min(1, Math.max(0, volume));
   bell.currentTime = 0;
   bell.play().catch(() => playSyntheticBell(volume));
+  setTimeout(() => {
+    bell.pause();
+    bell.currentTime = 0;
+  }, durationMs);
 }
 
 function playSyntheticBell(strength = 1) {
@@ -149,17 +153,17 @@ function playSyntheticBell(strength = 1) {
 }
 
 function playCountdownBell() {
-  playBellAudio(0.62);
+  playBellAudio(0.75, 360);
 }
 
 function playRoundBell() {
-  playBellAudio(1);
-  setTimeout(() => playBellAudio(1), 420);
+  playBellAudio(1, 360);
+  setTimeout(() => playBellAudio(1, 360), 420);
 }
 
 function playEndBell() {
-  playBellAudio(1);
-  setTimeout(() => playBellAudio(1), 420);
+  playBellAudio(1, 360);
+  setTimeout(() => playBellAudio(1, 360), 420);
 }
 
 function announcePhase(nextPhase) {
@@ -366,7 +370,7 @@ soundToggle.addEventListener("click", async () => {
   if (soundEnabled) {
     audioContext ||= new AudioContext();
     await audioContext.resume();
-    playBellAudio(0.75);
+    playBellAudio(0.75, 360);
   }
 });
 
