@@ -13,7 +13,8 @@ const settingsForm = document.querySelector("#settings-form");
 const presetButtons = document.querySelectorAll(".preset");
 
 let audioContext;
-let bellAudio;
+let bellBuffer = null;
+let bellBufferPromise = null;
 let wakeLock = null;
 let soundEnabled = false;
 let running = false;
@@ -96,20 +97,49 @@ async function releaseWakeLock() {
   wakeStatusEl.classList.remove("active");
 }
 
-function playBellAudio(volume = 1, durationMs = 520) {
+function getAudioContext() {
+  audioContext ||= new AudioContext();
+  return audioContext;
+}
+
+function loadBellBuffer() {
+  if (bellBuffer) {
+    return Promise.resolve(bellBuffer);
+  }
+
+  bellBufferPromise ||= fetch("./assets/boxing-bell.wav")
+    .then((response) => response.arrayBuffer())
+    .then((arrayBuffer) => getAudioContext().decodeAudioData(arrayBuffer))
+    .then((buffer) => {
+      bellBuffer = buffer;
+      return buffer;
+    });
+
+  return bellBufferPromise;
+}
+
+function playBellAudio(volume = 1, durationSeconds = 0.24) {
   if (!soundEnabled) {
     return;
   }
 
-  bellAudio ||= new Audio("./assets/boxing-bell.wav");
-  const bell = bellAudio.cloneNode();
-  bell.volume = Math.min(1, Math.max(0, volume));
-  bell.currentTime = 0;
-  bell.play().catch(() => playSyntheticBell(volume));
-  setTimeout(() => {
-    bell.pause();
-    bell.currentTime = 0;
-  }, durationMs);
+  if (!bellBuffer) {
+    loadBellBuffer()
+      .then(() => playBellAudio(volume, durationSeconds))
+      .catch(() => playSyntheticBell(volume));
+    return;
+  }
+
+  const context = getAudioContext();
+  const source = context.createBufferSource();
+  const gain = context.createGain();
+
+  source.buffer = bellBuffer;
+  gain.gain.setValueAtTime(Math.min(1, Math.max(0, volume)), context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + durationSeconds);
+  source.connect(gain);
+  gain.connect(context.destination);
+  source.start(context.currentTime, 0, durationSeconds);
 }
 
 function playSyntheticBell(strength = 1) {
@@ -153,17 +183,17 @@ function playSyntheticBell(strength = 1) {
 }
 
 function playCountdownBell() {
-  playBellAudio(0.75, 360);
+  playBellAudio(0.85, 0.24);
 }
 
 function playRoundBell() {
-  playBellAudio(1, 360);
-  setTimeout(() => playBellAudio(1, 360), 420);
+  playBellAudio(1, 0.24);
+  setTimeout(() => playBellAudio(1, 0.24), 280);
 }
 
 function playEndBell() {
-  playBellAudio(1, 360);
-  setTimeout(() => playBellAudio(1, 360), 420);
+  playBellAudio(1, 0.24);
+  setTimeout(() => playBellAudio(1, 0.24), 280);
 }
 
 function announcePhase(nextPhase) {
@@ -368,9 +398,9 @@ soundToggle.addEventListener("click", async () => {
   soundToggle.textContent = soundEnabled ? "Son ON" : "Son";
 
   if (soundEnabled) {
-    audioContext ||= new AudioContext();
-    await audioContext.resume();
-    playBellAudio(0.75, 360);
+    await getAudioContext().resume();
+    await loadBellBuffer().catch(() => {});
+    playBellAudio(0.75, 0.24);
   }
 });
 
